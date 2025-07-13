@@ -19,7 +19,7 @@ A robust API service that enriches company data by finding primary business webs
 
 ```bash
 # 1. Clone and setup
-git clone <repository-url>
+git clone https://github.com/ThomsenDrake/ai-domain-finder/tree/master
 cd domain-finder
 
 # 2. Install dependencies
@@ -131,11 +131,10 @@ SEARXNG_BASE_URL=https://searx.be        # Search engine URL
 
 ### AI Model Options
 
-- **`moonshotai/kimi-k2`** (default) - Best for reasoning, 66K context
-- **`openai/gpt-3.5-turbo`** - Fast and cost-effective
-- **`openai/gpt-4`** - Highest accuracy
-- **`anthropic/claude-3-haiku`** - Fast Claude model
-- **`anthropic/claude-3-sonnet`** - Balanced Claude model
+- **`moonshotai/kimi-k2`** (default) - Free, reasoning model with native tool calling
+- **`openai/gpt-4.1`** - Fast and cost-effective
+- **`anthropic/claude-4-sonnet`** - Balanced Claude model
+- **`google/gemini-2.5-flash`** - Fast, cost-effective Google model
 
 See [OpenRouter.ai](https://openrouter.ai/models) for full list.
 
@@ -259,25 +258,6 @@ docker-compose up --build
 2. Add Redis persistence: `redis:alpine-persistence`
 3. Scale API instances: `docker-compose up --scale domain-enrichment-api=3`
 4. Monitor OpenRouter rate limits
-
-## 📄 License
-
-[Add your license here]
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests
-5. Submit a pull request
-
-## 📞 Support
-
-- **Documentation**: See `CLAUDE.md` for technical details
-- **Docker**: See `DOCKER.md` for deployment guide
-- **Issues**: Create GitHub issues for bug reports
-- **API Reference**: Visit `/docs` endpoint when running
 
 ## 🎉 Examples
 
