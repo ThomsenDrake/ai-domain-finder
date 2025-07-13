@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Domain Lookup</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        input[type="text"]:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .results {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            border-left: 4px solid #007bff;
+            display: none;
+        }
+        .results.success {
+            border-left-color: #28a745;
+            background-color: #d4edda;
+        }
+        .results.error {
+            border-left-color: #dc3545;
+            background-color: #f8d7da;
+        }
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .metric:last-child {
+            border-bottom: none;
+        }
+        .metric-label {
+            font-weight: 600;
+            color: #495057;
+        }
+        .metric-value {
+            font-family: monospace;
+            color: #007bff;
+            font-size: 14px;
+        }
+        .domain-link {
+            color: #28a745;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .domain-link:hover {
+            text-decoration: underline;
+        }
+        .examples {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+        }
+        .examples h3 {
+            margin-top: 0;
+            color: #1976d2;
+        }
+        .example-link {
+            color: #1976d2;
+            text-decoration: none;
+            margin-right: 15px;
+            cursor: pointer;
+            display: inline-block;
+            margin-bottom: 5px;
+        }
+        .example-link:hover {
+            text-decoration: underline;
+        }
+        .nav-links {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .nav-links a {
+            color: #007bff;
+            text-decoration: none;
+            margin: 0 15px;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        .nav-links a:hover {
+            background-color: #e9ecef;
+        }
+        .nav-links a.active {
+            background-color: #007bff;
+            color: white;
+        }
+        .loading {
+            color: #007bff;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav-links">
+            <a href="/static/lookup.html" class="active">Simple Lookup</a>
+            <a href="/static/upload.html">CSV Batch Processing</a>
+            <a href="/test">Advanced Test</a>
+            <a href="/docs">API Documentation</a>
+        </div>
+
+        <h1>🔍 Simple Domain Lookup</h1>
+        
+        <form id="lookupForm">
+            <div class="form-group">
+                <label for="company">Company Name (required):</label>
+                <input type="text" id="company" placeholder="e.g., Apple Inc" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="location">Location (optional):</label>
+                <input type="text" id="location" placeholder="e.g., Cupertino, CA">
+            </div>
+            
+            <button type="submit" id="submitBtn">🔍 Find Domain</button>
+        </form>
+        
+        <div class="examples">
+            <h3>Try these examples:</h3>
+            <a href="#" class="example-link" onclick="fillExample('Apple Inc', 'Cupertino, CA')">Apple Inc</a>
+            <a href="#" class="example-link" onclick="fillExample('Microsoft Corporation', 'Redmond, WA')">Microsoft</a>
+            <a href="#" class="example-link" onclick="fillExample('Tesla Inc', 'Austin, TX')">Tesla</a>
+            <a href="#" class="example-link" onclick="fillExample('ABB Ltd', 'Zurich, Switzerland')">ABB Ltd</a>
+            <a href="#" class="example-link" onclick="fillExample('Amazon.com Inc', 'Seattle, WA')">Amazon</a>
+            <a href="#" class="example-link" onclick="fillExample('Ford Motor Company', 'Dearborn, MI')">Ford</a>
+        </div>
+        
+        <div class="results" id="results"></div>
+    </div>
+
+    <script>
+        function fillExample(company, location) {
+            document.getElementById('company').value = company;
+            document.getElementById('location').value = location;
+        }
+
+        function formatDomain(domain) {
+            if (!domain) return 'Not found';
+            return `<a href="https://${domain}" target="_blank" class="domain-link">${domain}</a>`;
+        }
+
+        function formatConfidence(score) {
+            const percentage = Math.round(score * 100);
+            const color = percentage >= 80 ? '#28a745' : percentage >= 60 ? '#ffc107' : '#dc3545';
+            return `<span style="color: ${color}; font-weight: 600;">${percentage}%</span>`;
+        }
+
+        function formatProcessingTime(ms) {
+            if (ms < 1000) return `${ms}ms`;
+            return `${(ms / 1000).toFixed(1)}s`;
+        }
+
+        function formatVerificationStatus(status) {
+            const statusMap = {
+                'verified': { text: '✅ Verified', color: '#28a745' },
+                'http_only': { text: '⚠️ HTTP Only', color: '#ffc107' },
+                'inaccessible': { text: '❌ Inaccessible', color: '#dc3545' },
+                'unreachable': { text: '❌ Unreachable', color: '#dc3545' },
+                'no_domain_found': { text: '❓ No Domain Found', color: '#6c757d' },
+                'error': { text: '❌ Processing Error', color: '#dc3545' }
+            };
+            
+            const mapped = statusMap[status] || { text: status, color: '#6c757d' };
+            return `<span style="color: ${mapped.color}; font-weight: 600;">${mapped.text}</span>`;
+        }
+
+        document.getElementById('lookupForm').onsubmit = async (e) => {
+            e.preventDefault();
+            
+            const results = document.getElementById('results');
+            const submitBtn = document.getElementById('submitBtn');
+            const companyName = document.getElementById('company').value.trim();
+            const location = document.getElementById('location').value.trim();
+            
+            if (!companyName) {
+                showError('Please enter a company name.');
+                return;
+            }
+            
+            // Show loading state
+            results.className = 'results loading';
+            results.innerHTML = '🔍 Searching for domain... This may take 5-15 seconds.';
+            results.style.display = 'block';
+            submitBtn.disabled = true;
+            submitBtn.textContent = '🔍 Searching...';
+            
+            try {
+                const response = await fetch('/lookup', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        company_name: companyName,
+                        location: location || null
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResults(data);
+                } else {
+                    showError(data.detail || 'Unknown error occurred');
+                }
+                
+            } catch (error) {
+                showError(`Failed to connect to API: ${error.message}`);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '🔍 Find Domain';
+            }
+        };
+
+        function showResults(data) {
+            const results = document.getElementById('results');
+            
+            results.className = 'results success';
+            results.innerHTML = `
+                <h3>🎯 Domain Lookup Results</h3>
+                <div class="metric">
+                    <span class="metric-label">🌐 Primary Domain:</span>
+                    <span class="metric-value">${formatDomain(data.primary_domain)}</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">📊 Confidence Score:</span>
+                    <span class="metric-value">${formatConfidence(data.confidence_score)}</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">✅ Verification Status:</span>
+                    <span class="metric-value">${formatVerificationStatus(data.verification_status)}</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">⏱️ Processing Time:</span>
+                    <span class="metric-value">${formatProcessingTime(data.processing_time_ms)}</span>
+                </div>
+            `;
+            results.style.display = 'block';
+        }
+
+        function showError(message) {
+            const results = document.getElementById('results');
+            results.className = 'results error';
+            results.innerHTML = `<h3>❌ Error</h3><p>${message}</p>`;
+            results.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

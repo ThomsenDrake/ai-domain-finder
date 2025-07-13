@@ -1,0 +1,66 @@
+# SearXNG Configuration for Domain Enrichment Service
+use_default_settings: true
+
+server:
+  port: 8080
+  bind_address: "0.0.0.0"
+  secret_key: "domain-enrichment-searxng-secret-key-change-in-production"
+  limiter: false  # Disable rate limiting for API usage
+  image_proxy: false
+
+search:
+  safe_search: 0
+  autocomplete: ""
+  default_lang: "en"
+  formats:
+    - html
+    - json
+
+# Configure search engines optimized for business domain discovery
+engines:
+  - name: google
+    engine: google
+    use_mobile_ui: false
+    
+  - name: bing
+    engine: bing
+    
+  - name: duckduckgo
+    engine: duckduckgo
+    
+  - name: startpage
+    engine: startpage
+    
+  - name: yahoo
+    engine: yahoo
+    disabled: false
+
+# Redis caching configuration
+redis:
+  url: redis://redis:6379/0
+
+outgoing:
+  request_timeout: 10.0
+  max_request_timeout: 20.0
+  useragent_suffix: "DomainEnrichment/1.0"
+
+ui:
+  static_use_hash: true
+  default_locale: "en"
+  query_in_title: true
+  infinite_scroll: false
+  center_alignment: false
+  cache_url: false
+  
+# Disable features not needed for API usage
+general:
+  donation_url: false
+  contact_url: false
+  wiki_url: false
+  public_instances: false
+  
+brand:
+  new_issue_url: false
+  docs_url: false
+  public_instances: false
+  wiki_url: false

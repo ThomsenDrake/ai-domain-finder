@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  # SearXNG Search Engine
+  searxng:
+    image: searxng/searxng:latest
+    container_name: domain-finder-searxng
+    ports:
+      - "8080:8080"
+    environment:
+      - SEARXNG_BASE_URL=http://localhost:8080
+    volumes:
+      - ./searxng/settings.yml:/etc/searxng/settings.yml:ro
+      - ./searxng/uwsgi.ini:/etc/searxng/uwsgi.ini:ro
+    depends_on:
+      - redis
+    restart: unless-stopped
+    networks:
+      - domain-enrichment-network
+
+  # Redis for SearXNG caching
+  redis:
+    image: redis:alpine
+    container_name: domain-finder-redis
+    restart: unless-stopped
+    networks:
+      - domain-enrichment-network
+
+  # Main Domain Enrichment API
+  domain-enrichment-api:
+    build: .
+    container_name: domain-enrichment-api
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - SEARXNG_BASE_URL=http://searxng:8080
+      - AI_MODEL=${AI_MODEL:-moonshotai/kimi-k2}
+    depends_on:
+      - searxng
+      - redis
+    restart: unless-stopped
+    networks:
+      - domain-enrichment-network
+    volumes:
+      # Optional: Mount volume for job persistence
+      - ./data:/app/data
+
+networks:
+  domain-enrichment-network:
+    driver: bridge
+
+volumes:
+  # Optional: For persistent data storage
+  redis-data:
+  searxng-data:
